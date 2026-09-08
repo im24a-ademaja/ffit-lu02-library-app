@@ -1,5 +1,6 @@
 package ch.bzz;
 
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -32,9 +33,15 @@ public class LibraryAppMain {
                     return;
                 }
 
-                Runnable command = COMMANDS.get(input.toLowerCase(Locale.ROOT));
+                String[] commandParts = input.split("\\s+", 2);
+                Runnable command = COMMANDS.get(commandParts[0].toLowerCase(Locale.ROOT));
                 if (command != null) {
-                    command.run();
+                    if ("importbooks".equals(commandParts[0].toLowerCase(Locale.ROOT))
+                            && commandParts.length == 2) {
+                        importBooks(commandParts[1]);
+                    } else {
+                        command.run();
+                    }
                 } else {
                     System.out.println("Command not recognized: " + input);
                 }
@@ -46,6 +53,8 @@ public class LibraryAppMain {
         Map<String, Runnable> commands = new LinkedHashMap<>();
         commands.put("help", LibraryAppMain::printHelp);
         commands.put("listbooks", LibraryAppMain::listBooks);
+        commands.put("importbooks", () -> {
+        });
         commands.put("quit", () -> {
         });
         return commands;
@@ -68,10 +77,24 @@ public class LibraryAppMain {
         }
     }
 
+    private static void importBooks(String fileName) {
+        try {
+            BookRepository.importBooks(Path.of(fileName));
+        } catch (java.io.IOException | java.sql.SQLException | RuntimeException exception) {
+            System.out.println("Could not import books: " + exception.getMessage());
+        }
+    }
+
     private static void printHelp() {
         System.out.println("Available commands:");
         for (String command : COMMANDS.keySet()) {
-            System.out.println("- " + command);
+            String displayName = command;
+            if ("listbooks".equals(command)) {
+                displayName = "listBooks";
+            } else if ("importbooks".equals(command)) {
+                displayName = "importBooks";
+            }
+            System.out.println("- " + displayName);
         }
     }
 }
