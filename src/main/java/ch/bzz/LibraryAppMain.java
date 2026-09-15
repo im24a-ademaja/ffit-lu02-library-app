@@ -1,6 +1,7 @@
 package ch.bzz;
 
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -36,9 +37,11 @@ public class LibraryAppMain {
                 String[] commandParts = input.split("\\s+", 2);
                 Runnable command = COMMANDS.get(commandParts[0].toLowerCase(Locale.ROOT));
                 if (command != null) {
-                    if ("importbooks".equals(commandParts[0].toLowerCase(Locale.ROOT))
-                            && commandParts.length == 2) {
+                    String commandName = commandParts[0].toLowerCase(Locale.ROOT);
+                    if ("importbooks".equals(commandName) && commandParts.length == 2) {
                         importBooks(commandParts[1]);
+                    } else if ("createuser".equals(commandName) && commandParts.length == 2) {
+                        createUser(commandParts[1]);
                     } else {
                         command.run();
                     }
@@ -54,6 +57,8 @@ public class LibraryAppMain {
         commands.put("help", LibraryAppMain::printHelp);
         commands.put("listbooks", LibraryAppMain::listBooks);
         commands.put("importbooks", () -> {
+        });
+        commands.put("createuser", () -> {
         });
         commands.put("quit", () -> {
         });
@@ -85,6 +90,19 @@ public class LibraryAppMain {
         }
     }
 
+    private static void createUser(String arguments) {
+        String[] values = arguments.split("\\s+");
+        if (values.length != 5) {
+            System.out.println("Usage: createUser firstname lastname dateOfBirth email password");
+            return;
+        }
+        try {
+            UserRepository.create(values[0], values[1], LocalDate.parse(values[2]), values[3], values[4]);
+        } catch (Exception exception) {
+            System.out.println("Could not create user: " + exception.getMessage());
+        }
+    }
+
     private static void printHelp() {
         System.out.println("Available commands:");
         for (String command : COMMANDS.keySet()) {
@@ -93,6 +111,8 @@ public class LibraryAppMain {
                 displayName = "listBooks";
             } else if ("importbooks".equals(command)) {
                 displayName = "importBooks";
+            } else if ("createuser".equals(command)) {
+                displayName = "createUser";
             }
             System.out.println("- " + displayName);
         }
