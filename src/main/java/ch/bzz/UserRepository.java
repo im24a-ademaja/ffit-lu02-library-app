@@ -20,7 +20,10 @@ public final class UserRepository {
     private static final String INSERT = "INSERT INTO users "
             + "(firstname, lastname, date_of_birth, email, password_hash, password_salt) "
             + "VALUES (?, ?, ?, ?, ?, ?)";
-        private static final String FIND_BY_EMAIL = "SELECT id, firstname, lastname, date_of_birth, email, "
+    private static final String UPDATE_PASSWORD = "UPDATE users SET password_hash = ?, password_salt = ? WHERE id = ?";
+    private static final String FIND_BY_ID = "SELECT id, firstname, lastname, date_of_birth, email, "
+            + "password_hash, password_salt FROM users WHERE id = ?";
+    private static final String FIND_BY_EMAIL = "SELECT id, firstname, lastname, date_of_birth, email, "
             + "password_hash, password_salt FROM users WHERE email = ?";
     private static final List<User> importedUsers = new ArrayList<>();
 
@@ -93,6 +96,53 @@ public final class UserRepository {
                         resultSet.getString("password_hash"),
                         resultSet.getString("password_salt"));
             }
+        }
+    }
+
+    public static User findById(int id) throws IOException, SQLException {
+        Properties configuration = loadConfiguration();
+        String url = configuration.getProperty("DB_URL");
+        if (url == null || url.isBlank()) {
+            return importedUsers.stream()
+                    .filter(user -> user.getId() == id)
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        try (Connection connection = DriverManager.getConnection(url,
+                configuration.getProperty("DB_USER"), configuration.getProperty("DB_PASSWORD"));
+                PreparedStatement statement = connection.prepareStatement(FIND_BY_ID)) {
+            statement.setInt(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    return null;
+                }
+                return new User(
+                        resultSet.getInt("id"),
+                        resultSet.getString("firstname"),
+                        resultSet.getString("lastname"),
+                        resultSet.getObject("date_of_birth", LocalDate.class),
+                        resultSet.getString("email"),
+                        resultSet.getString("password_hash"),
+                        resultSet.getString("password_salt"));
+            }
+        }
+    }
+
+    public static void updatePassword(User user) throws IOException, SQLException {
+        Properties configuration = loadConfiguration();
+        String url = configuration.getProperty("DB_URL");
+        if (url == null || url.isBlank()) {
+            return;
+        }
+
+        try (Connection connection = DriverManager.getConnection(url,
+                configuration.getProperty("DB_USER"), configuration.getProperty("DB_PASSWORD"));
+                PreparedStatement statement = connection.prepareStatement(UPDATE_PASSWORD)) {
+            statement.setString(1, user.getPasswordHash());
+            statement.setString(2, user.getPasswordSalt());
+            statement.setInt(3, user.getId());
+            statement.executeUpdate();
         }
     }
 

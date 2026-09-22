@@ -27,4 +27,13 @@ public final class JwtHandler {
                 .signWith(JWT_KEY)
                 .compact();
     }
+
+    public static Integer getUserId(String token) {
+        return Jwts.parser()
+                .verifyWith(JWT_KEY)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("userId", Integer.class);
+    }
 }

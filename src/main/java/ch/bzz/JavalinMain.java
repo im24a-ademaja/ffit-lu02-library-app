@@ -1,5 +1,7 @@
 package ch.bzz;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,52 @@ public final class JavalinMain {
                     context.status(401).json(Map.of("error", "Invalid email or password"));
                 } catch (Exception exception) {
                     context.status(401).json(Map.of("error", "Invalid email or password"));
+                }
+            })
+            .put("/auth/change-password", context -> {
+                String authHeader = context.header("Authorization");
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    context.status(401).json(Map.of("error", "Authorization required"));
+                    return;
+                }
+
+                User user;
+                try {
+                    Integer userId = JwtHandler.getUserId(authHeader.substring("Bearer ".length()));
+                    user = UserRepository.findById(userId);
+                } catch (RuntimeException | IOException | SQLException exception) {
+                    context.status(401).json(Map.of("error", "Invalid authorization"));
+                    return;
+                }
+                if (user == null) {
+                    context.status(401).json(Map.of("error", "Invalid authorization"));
+                    return;
+                }
+
+                Map<?, ?> json = context.bodyValidator(Map.class)
+                        .check(body -> body.containsKey("oldPassword"), "oldPassword is required")
+                        .check(body -> body.containsKey("newPassword"), "newPassword is required")
+                        .get();
+                String oldPassword = (String) json.get("oldPassword");
+                String newPassword = (String) json.get("newPassword");
+
+                try {
+                    if (!PasswordHandler.verifyPassword(
+                            oldPassword,
+                            Base64.getDecoder().decode(user.getPasswordHash()),
+                            Base64.getDecoder().decode(user.getPasswordSalt()))) {
+                        context.status(401).json(Map.of("error", "Invalid old password"));
+                        return;
+                    }
+
+                    byte[] newHash = PasswordHandler.hashPassword(
+                            newPassword,
+                            Base64.getDecoder().decode(user.getPasswordSalt()));
+                    user.setPasswordHash(Base64.getEncoder().encodeToString(newHash));
+                    UserRepository.updatePassword(user);
+                    context.json(Map.of("message", "Password changed successfully"));
+                } catch (java.security.NoSuchAlgorithmException | IOException | SQLException exception) {
+                    context.status(500).json(Map.of("error", "Could not change password"));
                 }
             });
         app.start(PORT);
