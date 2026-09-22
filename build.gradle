@@ -27,6 +27,10 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
     implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
     implementation 'org.postgresql:postgresql:42.7.3'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.7'
+
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.7'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.7'
 
     // dependencies for testing
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'

@@ -1,8 +1,11 @@
 package ch.bzz;
 
-import io.javalin.Javalin;
-
+import java.util.Base64;
 import java.util.List;
+import java.util.Map;
+
+import ch.bzz.security.JwtHandler;
+import io.javalin.Javalin;
 
 public final class JavalinMain {
 
@@ -17,6 +20,28 @@ public final class JavalinMain {
                     int limit = parseLimit(context.queryParam("limit"));
                     List<Book> books = BookRepository.findAll(limit);
                     context.json(books);
+            })
+            .post("/auth/login", context -> {
+                Map<?, ?> json = context.bodyValidator(Map.class)
+                    .check(body -> body.containsKey("email"), "email is required")
+                    .check(body -> body.containsKey("password"), "password is required")
+                    .get();
+
+                String inputEmail = (String) json.get("email");
+                String inputPassword = (String) json.get("password");
+                User user = UserRepository.findByEmail(inputEmail);
+
+                if (user != null
+                    && PasswordHandler.verifyPassword(
+                        inputPassword,
+                        Base64.getDecoder().decode(user.getPasswordHash()),
+                        Base64.getDecoder().decode(user.getPasswordSalt()))) {
+                String jwt = JwtHandler.createJwt(inputEmail, user.getId());
+                context.json(Map.of("token", jwt));
+                return;
+                }
+
+                context.status(401).json(Map.of("error", "Invalid email or password"));
                 });
         app.start(PORT);
     }

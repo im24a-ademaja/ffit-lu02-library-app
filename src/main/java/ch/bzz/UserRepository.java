@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ public final class UserRepository {
     private static final String INSERT = "INSERT INTO users "
             + "(firstname, lastname, date_of_birth, email, password_hash, password_salt) "
             + "VALUES (?, ?, ?, ?, ?, ?)";
+        private static final String FIND_BY_EMAIL = "SELECT id, firstname, lastname, date_of_birth, email, "
+            + "password_hash, password_salt FROM users WHERE email = ?";
     private static final List<User> importedUsers = new ArrayList<>();
 
     private UserRepository() {
@@ -61,6 +64,36 @@ public final class UserRepository {
 
     public static List<User> findAll() {
         return List.copyOf(importedUsers);
+    }
+
+    public static User findByEmail(String email) throws IOException, SQLException {
+        Properties configuration = loadConfiguration();
+        String url = configuration.getProperty("DB_URL");
+        if (url == null || url.isBlank()) {
+            return importedUsers.stream()
+                    .filter(user -> email.equals(user.getEmail()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        try (Connection connection = DriverManager.getConnection(url,
+                configuration.getProperty("DB_USER"), configuration.getProperty("DB_PASSWORD"));
+                PreparedStatement statement = connection.prepareStatement(FIND_BY_EMAIL)) {
+            statement.setString(1, email);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    return null;
+                }
+                return new User(
+                        resultSet.getInt("id"),
+                        resultSet.getString("firstname"),
+                        resultSet.getString("lastname"),
+                        resultSet.getObject("date_of_birth", LocalDate.class),
+                        resultSet.getString("email"),
+                        resultSet.getString("password_hash"),
+                        resultSet.getString("password_salt"));
+            }
+        }
     }
 
     private static Properties loadConfiguration() throws IOException {
