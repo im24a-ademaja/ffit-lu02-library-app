@@ -102,6 +102,7 @@ public final class BookRepository {
             }
         } catch (SQLException exception) {
             importedBooks = books;
+            throw exception;
         }
     }
 

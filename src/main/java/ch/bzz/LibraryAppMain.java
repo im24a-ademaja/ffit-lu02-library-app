@@ -85,6 +85,7 @@ public class LibraryAppMain {
     private static void importBooks(String fileName) {
         try {
             BookRepository.importBooks(Path.of(fileName));
+            System.out.println("Books imported successfully from " + fileName);
         } catch (java.io.IOException | java.sql.SQLException | RuntimeException exception) {
             System.out.println("Could not import books: " + exception.getMessage());
         }

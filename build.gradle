@@ -10,6 +10,10 @@ application {
     mainClass = 'ch.bzz.LibraryAppMain'
 }
 
+tasks.named('run', JavaExec) {
+    standardInput = System.in
+}
+
 tasks.register('runApi', JavaExec) {
     group = 'application'
     description = 'Runs the Javalin API on port 7070'
