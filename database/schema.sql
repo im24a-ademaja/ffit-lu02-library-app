@@ -15,3 +15,8 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     password_salt VARCHAR(255) NOT NULL
 );
+
+CREATE TABLE projects (
+    project_name VARCHAR(255) PRIMARY KEY,
+    password_hash VARCHAR(255) NOT NULL
+);

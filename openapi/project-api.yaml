@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: Project API
+  version: 1.0.0
+tags:
+  - name: Project
+    description: Project registration and login
+paths:
+  /projects:
+    post:
+      tags:
+        - Project
+      operationId: createProject
+      summary: Register a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '201':
+          description: Project registered
+        '400':
+          description: Invalid registration request
+        '409':
+          description: Project name already exists
+  /projects/login:
+    post:
+      tags:
+        - Project
+      operationId: loginProject
+      summary: Log in to a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Project login succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginProject200Response'
+        '400':
+          description: Invalid login request
+        '401':
+          description: Invalid project name or password
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - projectName
+        - password
+      properties:
+        projectName:
+          type: string
+          minLength: 1
+          maxLength: 255
+        password:
+          type: string
+          minLength: 1
+          format: password
+    LoginProject200Response:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
