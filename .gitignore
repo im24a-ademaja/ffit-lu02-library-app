@@ -29,7 +29,8 @@ gradle-app.log
 /.nb-gradle/
 
 # === VS Code ===
-.vscode/
+.vscode/*
+!.vscode/settings.json
 
 # === OS-specific ===
 .DS_Store
