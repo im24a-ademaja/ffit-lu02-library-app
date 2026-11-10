@@ -1,5 +1,7 @@
 package ch.bzz;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
@@ -8,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
+@Slf4j
 public class LibraryAppMain {
 
         @SuppressWarnings("unused")
@@ -46,7 +49,7 @@ public class LibraryAppMain {
                         command.run();
                     }
                 } else {
-                    System.out.println("Command not recognized: " + input);
+                    log.warn("Command not recognized");
                 }
             }
         }
@@ -70,6 +73,7 @@ public class LibraryAppMain {
         try {
             books = BookRepository.findAll();
         } catch (java.io.IOException | java.sql.SQLException exception) {
+            log.error("Could not load books; using fallback books", exception);
             books = List.of();
         }
 
@@ -78,34 +82,34 @@ public class LibraryAppMain {
         }
 
         for (Book book : books) {
-            System.out.println(book.getTitle());
+            log.info("{}", book.getTitle());
         }
     }
 
     private static void importBooks(String fileName) {
         try {
             BookRepository.importBooks(Path.of(fileName));
-            System.out.println("Books imported successfully from " + fileName);
+            log.info("Books imported successfully from {}", fileName);
         } catch (java.io.IOException | java.sql.SQLException | RuntimeException exception) {
-            System.out.println("Could not import books: " + exception.getMessage());
+            log.error("Could not import books from {}", fileName, exception);
         }
     }
 
     private static void createUser(String arguments) {
         String[] values = arguments.split("\\s+");
         if (values.length != 5) {
-            System.out.println("Usage: createUser firstname lastname dateOfBirth email password");
+            log.warn("Usage: createUser firstname lastname dateOfBirth email password");
             return;
         }
         try {
             UserRepository.create(values[0], values[1], LocalDate.parse(values[2]), values[3], values[4]);
         } catch (Exception exception) {
-            System.out.println("Could not create user: " + exception.getMessage());
+            log.error("Could not create user", exception);
         }
     }
 
     private static void printHelp() {
-        System.out.println("Available commands:");
+        log.info("Available commands:");
         for (String command : COMMANDS.keySet()) {
             String displayName = command;
             if ("listbooks".equals(command)) {
@@ -115,7 +119,7 @@ public class LibraryAppMain {
             } else if ("createuser".equals(command)) {
                 displayName = "createUser";
             }
-            System.out.println("- " + displayName);
+            log.info("- {}", displayName);
         }
     }
 }
