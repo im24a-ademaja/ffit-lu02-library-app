@@ -17,6 +17,10 @@ tasks.named('run', JavaExec) {
     standardInput = System.in
 }
 
+tasks.named('bootRun') {
+    mainClass = 'ch.bzz.ProjectApiApplication'
+}
+
 tasks.register('runApi', JavaExec) {
     group = 'application'
     description = 'Runs the Javalin API on port 7070'
