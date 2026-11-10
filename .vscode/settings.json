@@ -1,5 +1,7 @@
 {
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.import.gradle.enabled": true,
-    "java.import.gradle.wrapper.enabled": true
+    "java.import.gradle.wrapper.enabled": true,
+    "java.import.gradle.java.home": "C:\\Program Files\\OpenLogic\\jdk-21.0.12.8-hotspot",
+    "java.compile.nullAnalysis.mode": "automatic"
 }
