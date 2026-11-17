@@ -1,7 +1,5 @@
 package ch.bzz;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
@@ -10,7 +8,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
-@Slf4j
 public class LibraryAppMain {
 
         @SuppressWarnings("unused")
@@ -49,7 +46,7 @@ public class LibraryAppMain {
                         command.run();
                     }
                 } else {
-                    log.warn("Command not recognized");
+                    System.out.println("Command not recognized: " + input);
                 }
             }
         }
@@ -73,7 +70,7 @@ public class LibraryAppMain {
         try {
             books = BookRepository.findAll();
         } catch (java.io.IOException | java.sql.SQLException exception) {
-            log.error("Could not load books; using fallback books", exception);
+            System.err.println("Could not load books; using fallback books");
             books = List.of();
         }
 
@@ -82,34 +79,34 @@ public class LibraryAppMain {
         }
 
         for (Book book : books) {
-            log.info("{}", book.getTitle());
+            System.out.println(book.getTitle());
         }
     }
 
     private static void importBooks(String fileName) {
         try {
             BookRepository.importBooks(Path.of(fileName));
-            log.info("Books imported successfully from {}", fileName);
+            System.out.println("Books imported successfully from " + fileName);
         } catch (java.io.IOException | java.sql.SQLException | RuntimeException exception) {
-            log.error("Could not import books from {}", fileName, exception);
+            System.err.println("Could not import books from " + fileName);
         }
     }
 
     private static void createUser(String arguments) {
         String[] values = arguments.split("\\s+");
         if (values.length != 5) {
-            log.warn("Usage: createUser firstname lastname dateOfBirth email password");
+            System.out.println("Usage: createUser firstname lastname dateOfBirth email password");
             return;
         }
         try {
             UserRepository.create(values[0], values[1], LocalDate.parse(values[2]), values[3], values[4]);
         } catch (Exception exception) {
-            log.error("Could not create user", exception);
+            System.err.println("Could not create user");
         }
     }
 
     private static void printHelp() {
-        log.info("Available commands:");
+        System.out.println("Available commands:");
         for (String command : COMMANDS.keySet()) {
             String displayName = command;
             if ("listbooks".equals(command)) {
@@ -119,7 +116,7 @@ public class LibraryAppMain {
             } else if ("createuser".equals(command)) {
                 displayName = "createUser";
             }
-            log.info("- {}", displayName);
+            System.out.println("- " + displayName);
         }
     }
 }

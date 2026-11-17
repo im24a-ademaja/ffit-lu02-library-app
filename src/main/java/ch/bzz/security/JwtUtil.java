@@ -44,4 +44,17 @@ public class JwtUtil {
             return false;
         }
     }
+
+    public String getProjectNameFromAuthorization(String authorization) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Bearer authorization is required");
+        }
+
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(authorization.substring("Bearer ".length()))
+                .getPayload()
+                .getSubject();
+    }
 }

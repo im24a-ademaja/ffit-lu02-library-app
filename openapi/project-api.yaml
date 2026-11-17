@@ -5,6 +5,10 @@ info:
 tags:
   - name: Project
     description: Project registration and login
+  - name: Account
+    description: Project accounts
+  - name: Booking
+    description: Project bookings
 paths:
   /projects:
     post:
@@ -48,7 +52,50 @@ paths:
           description: Invalid login request
         '401':
           description: Invalid project name or password
+  /accounts:
+    get:
+      tags:
+        - Account
+      operationId: getAccounts
+      summary: Get accounts for the authenticated project
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        '401':
+          description: Missing or invalid authorization
+  /bookings:
+    get:
+      tags:
+        - Booking
+      operationId: getBookings
+      summary: Get bookings for the authenticated project
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '401':
+          description: Missing or invalid authorization
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     LoginRequest:
       type: object
@@ -71,3 +118,27 @@ components:
       properties:
         token:
           type: string
+    Account:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int32
+    Booking:
+      type: object
+      required:
+        - id
+        - debitAccountId
+        - creditAccountId
+      properties:
+        id:
+          type: integer
+          format: int32
+        debitAccountId:
+          type: integer
+          format: int32
+        creditAccountId:
+          type: integer
+          format: int32
