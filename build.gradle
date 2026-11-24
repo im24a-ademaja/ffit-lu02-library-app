@@ -1,9 +1,6 @@
 plugins {
     id 'java'
     id 'application'
-    id 'org.springframework.boot' version '3.3.2'
-    id 'io.spring.dependency-management' version '1.1.6'
-    id 'org.openapi.generator' version '7.12.0'
 }
 
 group = 'ch.bzz'
@@ -15,10 +12,6 @@ application {
 
 tasks.named('run', JavaExec) {
     standardInput = System.in
-}
-
-tasks.named('bootRun') {
-    mainClass = 'ch.bzz.ProjectApiApplication'
 }
 
 tasks.register('runApi', JavaExec) {
@@ -33,18 +26,9 @@ repositories {
 }
 
 dependencies {
-    // dependencies for the application
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
     implementation 'io.javalin:javalin:6.7.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
     implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.security:spring-security-crypto'
-    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
     implementation 'org.postgresql:postgresql:42.7.3'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.7'
 
@@ -55,38 +39,6 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-openApiGenerate {
-    generatorName = 'spring'
-    inputSpec = "$rootDir/openapi/project-api.yaml"
-    outputDir = "$buildDir/generated/openapi"
-    apiPackage = 'ch.bzz.generated.api'
-    modelPackage = 'ch.bzz.generated.model'
-    configOptions = [
-        interfaceOnly: 'true',
-        useSpringBoot3: 'true',
-        useResponseEntity: 'true',
-        useBeanValidation: 'false',
-        skipDefaultInterface: 'true',
-        useTags: 'true',
-        annotationLibrary: 'none',
-        documentationProvider: 'none'
-    ]
-    globalProperties = [
-        apis: '',
-        models: '',
-        supportingFiles: ''
-    ]
-}
-
-sourceSets.main.java.srcDir("$buildDir/generated/openapi/src/main/java")
-tasks.named('compileJava') {
-    dependsOn tasks.named('openApiGenerate')
-}
-
-springBoot {
-    mainClass = 'ch.bzz.ProjectApiApplication'
 }
 
 test {
